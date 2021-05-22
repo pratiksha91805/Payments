@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="Payment-Implementation-test-suite.xml" />
+	<munit:test name="Payment-Implementation-test-suite-Payment-GetAllFlowTest" doc:id="21cdcb99-4da8-4e72-b5be-4342d2ecbc12" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="7d373e0b-76b1-4759-b086-e4dfe3bdf9a5" />
+			<flow-ref doc:name="Flow-ref to Payment-GetAllFlow" doc:id="1d204ade-44bc-4eb4-9368-062ec8f797a8" name="Payment-GetAllFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="ec9601a1-ddf5-454a-a5c2-d27d664529eb" expression="#[payload]" is="#[MunitTools::notNullValue()]" message='"Payload should not be null"'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Payment-Implementation-test-suite-Payment-GetByIDFlowTest" doc:id="5a310d38-8f83-4fec-a3f2-99fb9e581ef1" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="b8b57f64-27e2-4828-8990-3c94fb7db65c" />
+			<flow-ref doc:name="Flow-ref to Payment-GetByIDFlow" doc:id="706a9fe5-a622-4633-b54e-f1929b5349ba" name="Payment-GetByIDFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="114f9ee2-ca9c-4a32-802b-95362b3c998c" is="#[MunitTools::notNullValue()]" message='"Payload should not be null"' expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Payment-Implementation-test-suite-Payment-DeleteByIDFlowTest" doc:id="8f56efc2-4e58-4aff-bff2-7de9d05a58dc" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="b8ebafc3-6365-4c92-9126-c2f7201bebbd" />
+			<flow-ref doc:name="Flow-ref to Payment-DeleteByIDFlow" doc:id="81e1ada7-11bc-48bb-a458-569ecbe5f6c8" name="Payment-DeleteByIDFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="30924d2d-b5bd-49a8-aa86-6a9b937c02cc" actual="#[payload.message]" expected='#["The payment details are deleted"]' message='"Check the delete flow"'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Payment-Implementation-test-suite-Payment-PatchByIDFlowTest" doc:id="e1b2d2cb-bdfa-4078-8fea-d1b00cafadf9" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="d7ba3409-f8d5-4adf-b58e-764d5c3d2d0e" />
+			<flow-ref doc:name="Flow-ref to Payment-PatchByIDFlow" doc:id="cde6faff-9be0-4e08-908c-808e5a6fd291" name="Payment-PatchByIDFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="da94d680-b621-4ade-9b4e-4526b01153b5" actual="#[payload.message]" message='"Check the patch flow"' expected='#["Payment Details are updated"]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Payment-Implementation-test-suite-Payment-PostFlowTest" doc:id="8e75b4c0-a759-4b39-a965-e7d81860d195" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="fbbce51b-9faa-4f91-b5d8-a679afb6e165" />
+			<flow-ref doc:name="Flow-ref to Payment-PostFlow" doc:id="2901a522-7ae4-429a-8094-84ee6010dd0f" name="Payment-PostFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="809a11b9-e2eb-44ba-8a7b-b1c9491a63ef" actual="#[vars.httpstatus]" expected="201" message='"Check the post flow"'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Payment-Implementation-test-suite-Payment-PutFlowTest" doc:id="5c6f00b1-363b-4335-9121-66c38220d198" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="6f9c29b6-ad08-47ea-86fb-451912b1d1ea" />
+			<flow-ref doc:name="Flow-ref to Payment-PutFlow" doc:id="a9612434-59f5-4a53-8f6c-d6edd046fa54" name="Payment-PutFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="68fda918-341f-4d95-9dbc-5341c8cd70b4" actual="#[vars.httpstatus]" expected="201" message='"Check the put flow"'/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

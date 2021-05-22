@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	<flow name="Payment-GetAllFlow" doc:id="a1a4cde9-94ec-4f44-981d-3285bf9ee3b2" >
+		<db:select doc:name="Payment-Database" doc:id="8e28c60b-c9f3-4cab-bc6b-4c37f310a7e1" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from Payments;]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Json Format &amp; Dataweave" doc:id="42ccd5a5-471b-4d55-b920-f742c1b7b6e7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	customerNumber: payload01.customerNumber,
+	checkNumber: payload01.checkNumber,
+	paymentDate: payload01.paymentDate as String default "",
+	amount: payload01.amount default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Payment-GetByIDFlow" doc:id="f6ee5767-a32b-4485-abea-f12508915a72" >
+		<db:query-single doc:name="Payment-Database" doc:id="1415d3e9-234b-47b8-ba30-32d3e74f1253" config-ref="Database_Config">
+			<error-mapping sourceType="DB:BAD_SQL_SYNTAX" targetType="GETBYID:BAD_SQL_SYNTAX" />
+			<db:sql ><![CDATA[select * from Payments where customerNumber = :customerNumber;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'customerNumber': vars.customerNumber
+}]]]></db:input-parameters>
+		</db:query-single>
+		<ee:transform doc:name="Json Format &amp; Dataweave" doc:id="6611e7b8-0323-493f-9869-0b628a97f231" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	customerNumber: payload.customerNumber,
+	checkNumber: payload.checkNumber,
+	paymentDate: payload.paymentDate as String default "",
+	amount: payload.amount default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Payment-DeleteByIDFlow" doc:id="3ea8e7e9-b4c8-45a2-bcd7-1daa5d9e93b6" >
+		<db:delete doc:name="Payment-Database" doc:id="fb81d4a6-0181-466d-aa9f-372d93ba0f5f" config-ref="Database_Config">
+			<db:sql ><![CDATA[delete from Payments where customerNumber = :customerNumber;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'customerNumber':vars.customerNumber
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Json Format &amp; Relevant Message" doc:id="7b4e835c-aa2b-42f5-bcac-c599a2aad5af" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "The payment details are deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="variableSub_Flow" doc:id="5f2117bc-83f2-43c5-bbd7-b076bc398aa6" >
+		<set-variable value="#[payload.checkNumber]" doc:name="checkNumber" doc:id="3588e7f6-1e4a-4735-8c3d-5e4e0bd22323" variableName="checkNumber" />
+		<set-variable value="#[payload.paymentDate]" doc:name="paymentDate" doc:id="be3f4f50-a790-453f-845c-d15f8c27ccbc" variableName="paymentDate" />
+		<set-variable value="#[payload.amount]" doc:name="amount" doc:id="c2746ee8-8e71-48ac-9c36-c93c9fa6c889" variableName="amount" />
+	</sub-flow>
+	<flow name="Payment-PostFlow" doc:id="314eaca7-9e9e-4bcb-922a-c24622728631" >
+		<flow-ref doc:name="variableSub_Flow" doc:id="52586403-d299-4af8-8531-aefc4d289f4c" name="variableSub_Flow"/>
+		<db:insert doc:name="Payment-Database" doc:id="9ff36d46-d65b-43d9-9846-3fdf39df5fa2" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into Payments(customerNumber,checkNumber,paymentDate,amount)
+values(:customerNumber,:checkNumber,:paymentDate,:amount)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	customerNumber: vars.customerNumber,
+	checkNumber: vars.checkNumber,
+	paymentDate: vars.paymentDate,
+	amount: vars.amount
+}]]]></db:input-parameters>
+		</db:insert>
+		<db:query-single doc:name="Payment-Database" doc:id="0763c18d-154c-4897-9514-845c5e2216da" config-ref="Database_Config">
+			<error-mapping sourceType="DB:BAD_SQL_SYNTAX" targetType="POST:BAD_SQL_SYNTAX" />
+			<db:sql ><![CDATA[select max(customerNumber) from Payments;]]></db:sql>
+		</db:query-single>
+		<ee:transform doc:name="Json Format &amp; Relevant Message" doc:id="e3e950ff-0f32-4f82-983c-3df5b69fbad4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"The payment details are inserted" ++ payload."max(customerNumber)"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="201" doc:name="httpstatus" doc:id="9e041e7d-1189-47f7-9091-1928808b9f5a" variableName="httpstatus"/>
+	</flow>
+	<flow name="Payment-PatchByIDFlow" doc:id="8b872675-de7f-44f1-a591-eccf5a174d61" >
+		<flow-ref doc:name="variableSub_Flow" doc:id="55790cbc-aa47-4d6b-b9bd-63ab6a2e713d" name="variableSub_Flow"/>
+		<db:update doc:name="Payment-Database" doc:id="e5284692-43ca-47c6-a570-a5ce3099bcd4" config-ref="Database_Config">
+			<db:sql ><![CDATA[update Payments set checkNumber= :checkNumber,paymentDate= :paymentDate,
+amount= :amount where customerNumber= :customerNumber;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	customerNumber: vars.customerNumber,
+	checkNumber: vars.checkNumber,
+	paymentDate: vars.paymentDate,
+	amount: vars.amount
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Json Format &amp; Relevant Message" doc:id="ed685f52-5c7b-4d09-a3b2-5a432aca1ac6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Payment Details are updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Payment-PutFlow" doc:id="3e205c30-f275-4326-9bc1-d1602f0a8540" >
+		<flow-ref doc:name="variableSub_Flow" doc:id="395da590-b29f-46ad-9a0e-06fc78a38373" name="variableSub_Flow"/>
+		<db:query-single doc:name="Payment-Database" doc:id="ca1036d8-cf94-4755-99b3-48a3e87f9897" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from Payments where customerNumber= :customerNumber;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	customerNumber: vars.customerNumber
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Choice" doc:id="7791c5b6-b08f-4c11-9271-b55cb1f44413" >
+			<when expression="#[sizeOf(payload)&gt;0]">
+				<db:update doc:name="Payment-Database" doc:id="0ff6b7bd-9120-4b7b-a9ca-b6b79b5823ed" config-ref="Database_Config">
+					<db:sql ><![CDATA[update Payments set checkNumber= :checkNumber,paymentDate= :paymentDate,
+amount= :amount where customerNumber= :customerNumber;]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	customerNumber: vars.customerNumber,
+	checkNumber: vars.checkNumber,
+	paymentDate: vars.paymentDate,
+	amount: vars.amount
+}]]]></db:input-parameters>
+				</db:update>
+			</when>
+			<otherwise >
+				<db:insert doc:name="Payment-Database" doc:id="d53af772-8f77-4359-a62d-d44b5f73aaa8" config-ref="Database_Config">
+					<db:sql ><![CDATA[insert into Payments(customerNumber,checkNumber,paymentDate,amount)
+values(:customerNumber,:checkNumber,:paymentDate,:amount);]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	customerNumber: vars.customerNumber,
+	checkNumber: vars.checkNumber,
+	paymentDate: vars.paymentDate,
+	amount: vars.amount
+}]]]></db:input-parameters>
+				</db:insert>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Json Format &amp; Relevant Message" doc:id="be03e5bd-0438-4882-9abb-1d1d6b68dd32" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "The payment details are updated" 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="201" doc:name="httpstatus" doc:id="43135774-04e5-4bd1-acf1-8570fbbdc7db" variableName="httpstatus"/>
+	</flow>
+</mule>

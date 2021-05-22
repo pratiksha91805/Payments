@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<http:listener-config name="payments-api-httpListenerConfig">
+        <http:listener-connection host="${http.host}" port="${http.port}" />
+    </http:listener-config>
+    <db:config name="Database_Config" doc:name="Database Config" doc:id="db40c4ab-4c02-4be4-86cd-12141f0385ca" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
+	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="7792fc47-9886-41ec-8eb9-3c609013665a" file="Payment-DEV.yaml" />
+	<error-handler name="Payment-GlobalError_Handler" doc:id="556cf065-3fe6-4ff7-86e0-de63dea96183" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="fa45c8d6-58c2-4e11-b6d4-920072f67bd8" when='#[error.errorType=="GETBYID:BAD_SQL_SYNTAX"]'>
+			<set-payload value='#["Error in getbyid flow"]' doc:name="Set Payload" doc:id="1adeec23-eac5-4a3e-bed0-80955c50b6b4" />
+			<set-variable value="500" doc:name="httpstatus" doc:id="73903fef-ec0f-4ba6-bbf0-b261ba47bfb8" variableName="httpstatus"/>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4f5fd1c2-2604-405b-99da-182c8686cdb3" when='#[error.errorType=="POST:BAD_SQL_SYNTAX"]'>
+			<set-payload value='#["Error in post flow"]' doc:name="Set Payload" doc:id="7aaa662c-c108-45fc-94d0-b8669a0f67c6" />
+			<set-variable value="500" doc:name="httpstatus" doc:id="0692d1cd-5f3f-4fe7-a109-52fd8ac6de1c" variableName="httpstatus"/>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9f581778-eae1-4081-89f4-b32454d531eb" type="DB:CONNECTIVITY">
+			<set-payload value='#["Error while connecting to database"]' doc:name="Set Payload" doc:id="ae2dcf42-ba9e-4d17-85cd-4a825f481e3f" />
+			<set-variable value="500" doc:name="httpstatus" doc:id="e7bc7a01-a48a-4713-b61c-fddac6173b34" variableName="httpstatus"/>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="69f8f9ae-1e1c-4c17-a07f-92c915cf5d9b" type="ANY">
+			<set-payload value='#["Error"]' doc:name="Set Payload" doc:id="b3db6a78-7d0f-4a60-be2b-acef59923296" />
+			<set-variable value="500" doc:name="httpstatus" doc:id="a80c79a6-cb31-4010-8425-88f96bec5ba6" variableName="httpstatus"/>
+		</on-error-continue>
+	</error-handler>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mule>
