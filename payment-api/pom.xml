@@ -31,6 +31,17 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
+					<cloudHubDeployment>
+                        <uri>https://anypoint.mulesoft.com</uri>
+                        <username>pratiksha_k1</username>
+                        <password>Prati@1805</password>
+                        <environment>Sandbox</environment>
+                        <muleVersion>4.3.0</muleVersion>
+                        <workers>1</workers>
+                        <workerType>Micro</workerType>
+                        <applicationName>Payments-project-prati</applicationName>
+                        <objectStoreV2>true</objectStoreV2>
+                    </cloudHubDeployment>
 				<sharedLibraries>
                         <sharedLibrary>
                             <groupId>mysql</groupId>
@@ -55,6 +66,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                      <runtimeVersion>4.3.0-20210119</runtimeVersion>
                     <coverage>
                         <runCoverage>true</runCoverage>
                         <formats>
@@ -63,10 +75,49 @@
                     </coverage>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.mulesoft.munit.tools</groupId>
+                <artifactId>munit-maven-plugin</artifactId>
+                <version>${munit.version}</version>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                            <goal>coverage-report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    
+                    <runtimeVersion>4.3.0-20210119</runtimeVersion>
+                    <coverage>
+                        <runCoverage>true</runCoverage>
+                        <formats>
+                            <format>html</format>
+                        </formats>
+                    </coverage>
+                </configuration>
+            </plugin>
+            
         </plugins>
 	</build>
+	<distributionManagement>
+        <snapshotRepository>
+          <id>Payments</id>
+          <name>Payments</name>
+          <url>http://localhost:8091/repository/Payments/</url>
+        </snapshotRepository>
+     </distributionManagement>
+	
 
 	<dependencies>
+	 <dependency>
+             <groupId>org.sonarsource.scanner.maven</groupId>
+             <artifactId>sonar-maven-plugin</artifactId>
+             <version>3.6.1.1688</version>
+        </dependency>
         <dependency>
             <groupId>org.mule.connectors</groupId>
             <artifactId>mule-http-connector</artifactId>
